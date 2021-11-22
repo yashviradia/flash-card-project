@@ -4,45 +4,44 @@ import random
 
 # ---------------------------- CONSTANTS ------------------------------- #
 BACKGROUND_COLOR = "#B1DDC6"
-timer = 0
+current_card = {}
+
 
 # ---------------------------- APP MECHANISM ------------------------------- #
 
-word_data = pandas.read_csv("./data/german_words.csv")
-word_data_list = word_data.to_dict(orient="records")
+try:
+    words_to_learn_data = pandas.read_csv("./data/words_to_learn.csv")
+except FileNotFoundError:
+    word_data = pandas.read_csv("./data/german_words.csv")
+    word_data_list = word_data.to_dict(orient="records")
+else:
+    word_data_list = words_to_learn_data.to_dict(orient="records")
 
 
 def random_word():
     """By hitting wrong or right random word will be generated."""
-
-    random_word.chosen_word_dictionary = random.choice(word_data_list)
+    global current_card, flip_timer
+    window.after_cancel(flip_timer)
+    current_card = random.choice(word_data_list)
     canvas.itemconfig(canvas_image, image=card_front)
     canvas.itemconfig(title_text, text="Deutsch", fill="black")
-    canvas.itemconfig(word_text, text=f"{random_word.chosen_word_dictionary['Deutsch']}", fill="black")
+    canvas.itemconfig(word_text, text=current_card["Deutsch"], fill="black")
+    flip_timer = window.after(3000, func=flip_card)
 
 
 def flip_card():
     """the card will be flipped after 3 seconds to generate the translation of word."""
-
-    global timer
-    timer = window.after(3000, flip_card)
-
     canvas.itemconfig(canvas_image, image=card_back)
     canvas.itemconfig(title_text, text="English", fill="white")
-    canvas.itemconfig(word_text, text=f"{random_word.chosen_word_dictionary['English']}", fill="white")
-
-    update_data()
+    canvas.itemconfig(word_text, text=current_card['English'], fill="white")
 
 
 def update_data():
     """Removes the words from german_words.csv and updated new data is stored in words_to_learn.csv"""
-    # When right arrow is hit, remove that word from german_words.csv
-    # make new file named words_to_learn.csv and add those remaining words in it
-    # then random_word() should choose random word from words_to_learn.csv
-    if random_word.chosen_word_dictionary in word_data_list:
-        word_data_list.remove(random_word.chosen_word_dictionary)
-        words_to_learn_data = pandas.DataFrame(word_data_list)
-        words_to_learn_data.to_csv("./data/words_to_learn.csv", index=False)
+    word_data_list.remove(current_card)
+    words_to_learn_data = pandas.DataFrame(word_data_list)
+    words_to_learn_data.to_csv("./data/words_to_learn.csv", index=False)
+    random_word()
 
 # ---------------------------- UI SETUP ------------------------------- #
 
@@ -50,6 +49,8 @@ def update_data():
 window = Tk()
 window.title("Flashy")
 window.config(padx=50, pady=50, bg=BACKGROUND_COLOR)
+
+flip_timer = window.after(3000, func=flip_card)
 
 canvas = Canvas(width=800, height=526, bg=BACKGROUND_COLOR, highlightthickness=0)
 card_front = PhotoImage(file="./images/card_front.png")
@@ -71,12 +72,7 @@ wrong_button.grid(column=0, row=1)
 
 # calling the functions to start the flashy app
 random_word()
-flip_card()
 
 window.mainloop()
 
 
-# ------------ Problems ------------#
-# 1. after getting the front face of the card, the timer should reset itself
-# 2. Flip the card after 3 seconds
-# 3. saving the data of "words_to_learn.csv"
