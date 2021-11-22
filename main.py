@@ -62,12 +62,12 @@ canvas.grid(column=0, row=0, columnspan=2)
 
 # right button image
 right_button_image = PhotoImage(file="./images/right.png")
-right_button = Button(image=right_button_image, highlightthickness=0, command=random_word)
+right_button = Button(image=right_button_image, highlightthickness=0, command=update_data)
 right_button.grid(column=1, row=1)
 
 # wrong button image -- there's no callback function yet - need to add!
 wrong_button_image = PhotoImage(file="./images/wrong.png")
-wrong_button = Button(image=wrong_button_image, highlightthickness=0, command=flip_card)
+wrong_button = Button(image=wrong_button_image, highlightthickness=0, command=random_word)
 wrong_button.grid(column=0, row=1)
 
 # calling the functions to start the flashy app
